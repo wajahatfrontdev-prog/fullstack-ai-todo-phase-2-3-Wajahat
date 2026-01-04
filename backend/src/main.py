@@ -70,6 +70,8 @@ CORS_ORIGINS: list[str] = [
     "https://animated-journey-jj46jgwxxw9jcgr5-3000.app.github.dev",  # Current frontend URL
     "https://redesigned-guide-r45w6jg4px56hr5p-3000.app.github.dev",  # Updated frontend URL
     "https://hackathon-todo-app-by-wajahat-fq3nc9zlz.vercel.app",  # Vercel deployment
+    "https://hackathon-todo-app-by-wajahat-2grrxcmms.vercel.app",  # New Vercel deployment
+    "https://hackathon-todo-app-by-wajahat-ali-lastof-igjfftsbm.vercel.app",  # Latest Vercel deployment
     "https://simple-q7ez.vercel.app",  # Vercel frontend
     "*",  # Allow all for development
 ]
