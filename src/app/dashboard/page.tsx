@@ -97,12 +97,12 @@ export default function DashboardPage() {
       loadTasks();
     }
     
-    // Auto-refresh every 5 seconds (reduced frequency)
+    // Auto-refresh every 2 seconds for faster updates
     const interval = setInterval(() => {
       if (session) {
         loadTasks();
       }
-    }, 5000);
+    }, 2000);
     
     return () => clearInterval(interval);
   }, [session]);
