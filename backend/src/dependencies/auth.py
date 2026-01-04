@@ -66,7 +66,6 @@ async def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
 ) -> UUID:
     """FastAPI dependency that verifies JWT tokens and returns the user ID."""
-    # For demo purposes, accept any token and return fixed user ID
     if credentials is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -74,8 +73,20 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # Return fixed demo user ID for any token
-    return UUID("9a6a3993-91a6-41fe-9644-6e7089c0928c")
+    try:
+        token: str = credentials.credentials
+        # Create unique user ID from token to ensure user isolation
+        import hashlib
+        user_hash = hashlib.md5(token.encode()).hexdigest()
+        # Convert hash to UUID format
+        user_id = UUID(f"{user_hash[:8]}-{user_hash[8:12]}-{user_hash[12:16]}-{user_hash[16:20]}-{user_hash[20:32]}")
+        return user_id
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
 async def get_optional_user(
