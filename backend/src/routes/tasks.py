@@ -4,7 +4,7 @@ Task API routes - DEMO MODE: Auth bypassed
 
 import logging
 from typing import Annotated
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, HTTPException, Request, status, Depends  # 👈 Depends yahan add karo
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
