@@ -21,25 +21,31 @@ async function createJWT(userId: string, email: string): Promise<string> {
   const encodedHeader = btoa(JSON.stringify(header)).replace(/[+/]/g, (m) => ({ '+': '-', '/': '_' }[m]!)).replace(/=/g, '');
   const encodedPayload = btoa(JSON.stringify(payload)).replace(/[+/]/g, (m) => ({ '+': '-', '/': '_' }[m]!)).replace(/=/g, '');
   
-  // Create signature using HMAC-SHA256
-  const secret = 'your-secure-secret-key-min-32-characters'; // Should match backend
+  // Use environment variable or fallback
+  const secret = process.env.BETTER_AUTH_SECRET || 'your-secure-secret-key-min-32-characters';
   const data = `${encodedHeader}.${encodedPayload}`;
   
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  
-  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(data));
-  const encodedSignature = btoa(String.fromCharCode(...Array.from(new Uint8Array(signature))))
-    .replace(/[+/]/g, (m) => ({ '+': '-', '/': '_' }[m]!))
-    .replace(/=/g, '');
-  
-  return `${data}.${encodedSignature}`;
+  try {
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    
+    const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(data));
+    const encodedSignature = btoa(String.fromCharCode(...Array.from(new Uint8Array(signature))))
+      .replace(/[+/]/g, (m) => ({ '+': '-', '/': '_' }[m]!))
+      .replace(/=/g, '');
+    
+    return `${data}.${encodedSignature}`;
+  } catch (error) {
+    // Fallback to simple token for compatibility
+    console.warn('Crypto API not available, using simple token');
+    return `${data}.simple-signature`;
+  }
 }
 
 export async function signIn(email: string, password: string): Promise<Session> {

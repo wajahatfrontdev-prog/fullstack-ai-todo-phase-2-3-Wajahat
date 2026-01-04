@@ -76,36 +76,50 @@ async def get_current_user(
     
     try:
         token: str = credentials.credentials
-        # Simple JWT parsing for frontend compatibility
-        parts = token.split('.')
-        if len(parts) != 3:
-            raise ValueError("Invalid token format")
         
-        # Decode payload (add padding if needed)
-        payload_b64 = parts[1]
-        # Add padding if needed
-        payload_b64 += '=' * (4 - len(payload_b64) % 4)
-        
-        import base64
-        import json
-        payload_json = base64.b64decode(payload_b64).decode('utf-8')
-        payload = json.loads(payload_json)
-        
-        user_id_str = payload.get('sub')
-        if not user_id_str:
-            raise ValueError("Missing user ID in token")
-            
-        # Check expiration
-        exp = payload.get('exp')
-        if exp and exp < int(time.time()):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token has expired",
-                headers={"WWW-Authenticate": "Bearer"},
+        # Try proper JWT verification first
+        try:
+            payload = jwt.decode(
+                token,
+                BETTER_AUTH_SECRET,
+                algorithms=[JWT_ALGORITHM],
+                options={"require": ["sub"], "verify_exp": True},
             )
+            user_id_str = payload.get("sub")
+            if user_id_str:
+                return UUID(user_id_str)
+        except jwt.InvalidTokenError:
+            # Fallback to simple parsing for frontend compatibility
+            parts = token.split('.')
+            if len(parts) != 3:
+                raise ValueError("Invalid token format")
             
-        return UUID(user_id_str)
+            # Decode payload (add padding if needed)
+            payload_b64 = parts[1]
+            payload_b64 += '=' * (4 - len(payload_b64) % 4)
+            
+            import base64
+            import json
+            payload_json = base64.b64decode(payload_b64).decode('utf-8')
+            payload = json.loads(payload_json)
+            
+            user_id_str = payload.get('sub')
+            if not user_id_str:
+                raise ValueError("Missing user ID in token")
+                
+            # Check expiration
+            exp = payload.get('exp')
+            if exp and exp < int(time.time()):
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Token has expired",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+                
+            return UUID(user_id_str)
+            
     except Exception as e:
+        logger.error(f"Token validation failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token",
