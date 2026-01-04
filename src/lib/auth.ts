@@ -11,8 +11,12 @@ interface Session {
 // Simple JWT creation for frontend
 function createJWT(userId: string, email: string): string {
   const header = { alg: 'HS256', typ: 'JWT' };
+  // Create proper UUID format from email
+  const emailHash = btoa(email).replace(/[^a-zA-Z0-9]/g, '').substring(0, 32);
+  const uuid = `${emailHash.substring(0,8)}-${emailHash.substring(8,12)}-${emailHash.substring(12,16)}-${emailHash.substring(16,20)}-${emailHash.substring(20,32)}`;
+  
   const payload = {
-    sub: userId,
+    sub: uuid,
     email: email,
     iat: Math.floor(Date.now() / 1000),
     exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
@@ -32,8 +36,9 @@ export async function signIn(email: string, password: string): Promise<Session> 
     throw new Error('Password must be at least 8 characters');
   }
   
-  // Generate unique user ID from email
-  const userId = btoa(email).substring(0, 32);
+  // Generate unique user ID from email in UUID format
+  const emailHash = btoa(email).replace(/[^a-zA-Z0-9]/g, '').substring(0, 32);
+  const userId = `${emailHash.substring(0,8)}-${emailHash.substring(8,12)}-${emailHash.substring(12,16)}-${emailHash.substring(16,20)}-${emailHash.substring(20,32)}`;
   const token = createJWT(userId, email);
   
   const session = {
@@ -53,8 +58,9 @@ export async function signUp(email: string, password: string): Promise<Session> 
     throw new Error('Password must be at least 8 characters');
   }
   
-  // Generate unique user ID from email
-  const userId = btoa(email).substring(0, 32);
+  // Generate unique user ID from email in UUID format
+  const emailHash = btoa(email).replace(/[^a-zA-Z0-9]/g, '').substring(0, 32);
+  const userId = `${emailHash.substring(0,8)}-${emailHash.substring(8,12)}-${emailHash.substring(12,16)}-${emailHash.substring(16,20)}-${emailHash.substring(20,32)}`;
   const token = createJWT(userId, email);
   
   const session = {
