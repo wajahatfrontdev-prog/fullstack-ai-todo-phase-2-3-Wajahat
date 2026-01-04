@@ -15,7 +15,7 @@ export async function sendChatMessage(
   // Use fixed test token for demo
   const token = 'demo-token-123';
   
-  const CHAT_API_URL = process.env.NEXT_PUBLIC_CHAT_API_URL || 'https://redesigned-guide-r45w6jg4px56hr5p-8000.app.github.dev/api/chat';
+  const CHAT_API_URL = process.env.NEXT_PUBLIC_CHAT_API_URL || 'https://hackathon-todo-app-by-wajahat-ali-lastof-250bbwsmx.vercel.app/api/chat';
   
   const response = await fetch(CHAT_API_URL, {
     method: 'POST',
