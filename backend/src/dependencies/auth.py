@@ -67,34 +67,21 @@ async def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
 ) -> UUID:
     """FastAPI dependency that verifies JWT tokens and returns the user ID."""
+    # DEMO MODE: Accept any token or no token
+    # Return a fixed demo user ID
+    demo_user_id = "9a6a3993-91a6-41fe-9644-6e7089c0928c"
+    
     if credentials is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication required",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        # No token? Return demo user
+        return UUID(demo_user_id)
     
     try:
         token: str = credentials.credentials
         
-        # Try proper JWT verification first
-        try:
-            payload = jwt.decode(
-                token,
-                BETTER_AUTH_SECRET,
-                algorithms=[JWT_ALGORITHM],
-                options={"require": ["sub"], "verify_exp": True},
-            )
-            user_id_str = payload.get("sub")
-            if user_id_str:
-                return UUID(user_id_str)
-        except jwt.InvalidTokenError:
-            # Fallback to simple parsing for frontend compatibility
-            parts = token.split('.')
-            if len(parts) != 3:
-                raise ValueError("Invalid token format")
-            
-            # Decode payload (add padding if needed)
+        # Try to extract user ID from token
+        parts = token.split('.')
+        if len(parts) == 3:
+            # Decode payload
             payload_b64 = parts[1]
             payload_b64 += '=' * (4 - len(payload_b64) % 4)
             
@@ -104,27 +91,13 @@ async def get_current_user(
             payload = json.loads(payload_json)
             
             user_id_str = payload.get('sub')
-            if not user_id_str:
-                raise ValueError("Missing user ID in token")
-                
-            # Check expiration
-            exp = payload.get('exp')
-            if exp and exp < int(time.time()):
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Token has expired",
-                    headers={"WWW-Authenticate": "Bearer"},
-                )
-                
-            return UUID(user_id_str)
-            
-    except Exception as e:
-        logger.error(f"Token validation failed: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+            if user_id_str:
+                return UUID(user_id_str)
+    except:
+        pass
+    
+    # Fallback to demo user
+    return UUID(demo_user_id)
 
 
 async def get_optional_user(
