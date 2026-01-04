@@ -68,6 +68,7 @@ CORS_ORIGINS: list[str] = [
     "https://animated-fortnight-v6g4657xxw572w47j-3000.app.github.dev",  # Codespace frontend
     "https://animated-fortnight-v6g4657xxw572w47j-3001.app.github.dev",
     "https://animated-journey-jj46jgwxxw9jcgr5-3000.app.github.dev",  # Current frontend URL
+    "https://redesigned-guide-r45w6jg4px56hr5p-3000.app.github.dev",  # Updated frontend URL
     "https://simple-q7ez.vercel.app",  # Vercel frontend
     "*",  # Allow all for development
 ]
