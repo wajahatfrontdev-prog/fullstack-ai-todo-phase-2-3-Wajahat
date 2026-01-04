@@ -8,6 +8,23 @@ interface Session {
   token: string;
 }
 
+// Simple JWT creation for frontend
+function createJWT(userId: string, email: string): string {
+  const header = { alg: 'HS256', typ: 'JWT' };
+  const payload = {
+    sub: userId,
+    email: email,
+    iat: Math.floor(Date.now() / 1000),
+    exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
+  };
+  
+  const encodedHeader = btoa(JSON.stringify(header)).replace(/=/g, '');
+  const encodedPayload = btoa(JSON.stringify(payload)).replace(/=/g, '');
+  const signature = btoa(`${encodedHeader}.${encodedPayload}.signature`).replace(/=/g, '');
+  
+  return `${encodedHeader}.${encodedPayload}.${signature}`;
+}
+
 export async function signIn(email: string, password: string): Promise<Session> {
   await new Promise(resolve => setTimeout(resolve, 1000));
   
@@ -15,9 +32,9 @@ export async function signIn(email: string, password: string): Promise<Session> 
     throw new Error('Password must be at least 8 characters');
   }
   
-  // Generate unique token from email
-  const token = btoa(email + ':' + Date.now());
+  // Generate unique user ID from email
   const userId = btoa(email).substring(0, 32);
+  const token = createJWT(userId, email);
   
   const session = {
     user: { id: userId, email },
@@ -36,9 +53,9 @@ export async function signUp(email: string, password: string): Promise<Session> 
     throw new Error('Password must be at least 8 characters');
   }
   
-  // Generate unique token from email
-  const token = btoa(email + ':' + Date.now());
+  // Generate unique user ID from email
   const userId = btoa(email).substring(0, 32);
+  const token = createJWT(userId, email);
   
   const session = {
     user: { id: userId, email },
@@ -61,5 +78,6 @@ export async function getSession(): Promise<Session | null> {
 
 export async function signOut(): Promise<void> {
   localStorage.removeItem('session');
+  localStorage.removeItem('auth-token');
   window.location.href = '/';
 }
