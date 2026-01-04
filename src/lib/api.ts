@@ -1,5 +1,3 @@
-// api.ts - Updated for HACKATHON DEMO (No Auth Required)
-
 export interface TaskResponse {
   id: string;
   user_id: string;
@@ -21,23 +19,24 @@ export interface TaskUpdate {
   completed?: boolean;
 }
 
-// 🔥 FIXED: Correct backend URL (latest working one with tasks)
+// 🔥 CORRECT BACKEND URL (working one with 52 tasks)
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://hackathon-todo-app-by-wajahat-ali-l.vercel.app';
 
 function getApiBase(): string {
   return API_BASE.replace(/\/$/, '');
 }
 
-// 🔥 NO AUTH HEADER — Backend me auth bypass hai demo ke liye
+// 🔥 NO TOKEN — Demo mode me auth bypass hai
 export async function getTasks(): Promise<TaskResponse[]> {
   const response = await fetch(`${getApiBase()}/api/tasks`);
   
   if (!response.ok) {
-    console.error('Fetch tasks failed:', response.status, await response.text());
-    return []; // Empty array on error — dashboard empty nahi dikhaayega error
+    console.error('Tasks fetch failed:', response.status, await response.text());
+    return [];
   }
   
   const data = await response.json();
+  console.log('Fetched tasks:', data); // Debug ke liye
   return data.tasks || [];
 }
 
@@ -46,19 +45,20 @@ export async function createTask(task: TaskCreate): Promise<TaskResponse> {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      // NO Authorization header — auth bypassed
+      // No Authorization
     },
     body: JSON.stringify(task),
   });
 
   if (!response.ok) {
-    console.error('Create task failed:', response.status, await response.text());
+    console.error('Create failed:', response.status, await response.text());
     throw new Error('Failed to create task');
   }
   
   return response.json();
 }
 
+// Baaki functions me bhi Authorization header hata do
 export async function updateTask(id: string, task: TaskUpdate): Promise<TaskResponse> {
   const response = await fetch(`${getApiBase()}/api/tasks/${id}`, {
     method: 'PUT',
@@ -86,7 +86,7 @@ export async function toggleTaskComplete(id: string): Promise<TaskResponse> {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ completed: true }), // Toggle logic backend me hai
+    body: JSON.stringify({ completed: !true }), // Toggle logic
   });
 
   if (!response.ok) throw new Error('Failed to toggle task');
