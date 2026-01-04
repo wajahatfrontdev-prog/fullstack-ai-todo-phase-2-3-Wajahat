@@ -132,10 +132,17 @@ class TaskMCPServer:
         """Add a new task."""
         try:
             async for db in get_db():
+                # Only add description if explicitly provided and not empty
+                description = args.get("description", "")
+                if description and description.strip():
+                    description = description.strip()
+                else:
+                    description = ""
+                
                 task = Task(
                     user_id=UUID(args["user_id"]),
                     title=args["title"],
-                    description=args.get("description", ""),
+                    description=description,
                     completed=False
                 )
                 db.add(task)
