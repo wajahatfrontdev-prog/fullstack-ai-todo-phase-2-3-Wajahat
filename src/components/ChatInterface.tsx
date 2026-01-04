@@ -97,14 +97,19 @@ export function ChatInterface() {
         return [...withoutTemp, newUserMessage, assistantMessage];
       });
 
-      // Trigger dashboard refresh for any task operation
+      // Trigger INSTANT dashboard refresh for any task operation
       if (response.tool_calls && response.tool_calls.length > 0) {
         const taskTools = ['add_task', 'create_task', 'update_task', 'delete_task', 'complete_task'];
         const hasTaskOperation = response.tool_calls.some(tc => taskTools.includes(tc.tool));
         
         if (hasTaskOperation) {
-          // Dispatch custom event to refresh dashboard
+          // Dispatch custom event to refresh dashboard IMMEDIATELY
           window.dispatchEvent(new CustomEvent('task-created', { detail: { refresh: true } }));
+          
+          // Also trigger after 500ms to ensure it catches
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('task-created', { detail: { refresh: true } }));
+          }, 500);
         }
       }
 
