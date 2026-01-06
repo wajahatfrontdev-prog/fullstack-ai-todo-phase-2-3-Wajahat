@@ -78,6 +78,17 @@ export function FloatingChatbot() {
       };
 
       setMessages(prev => [...prev, assistantMessage]);
+      
+      // Check if any tasks were created and emit event to refresh dashboard
+      if (response.tool_calls) {
+        const taskCreated = response.tool_calls.some(call => 
+          call.tool === 'add_task' && call.result?.success
+        );
+        if (taskCreated) {
+          // Emit custom event to notify dashboard to refresh
+          window.dispatchEvent(new CustomEvent('task-created'));
+        }
+      }
     } catch (error) {
       console.error('Chat error:', error);
       let errorMsg = 'Sorry, I encountered an error. Please try again.';
