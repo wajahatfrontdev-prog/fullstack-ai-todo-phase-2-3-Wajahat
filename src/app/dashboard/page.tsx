@@ -96,15 +96,6 @@ export default function DashboardPage() {
     if (session) {
       loadTasks();
     }
-    
-    // Auto-refresh every 2 seconds for faster updates
-    const interval = setInterval(() => {
-      if (session) {
-        loadTasks();
-      }
-    }, 2000);
-    
-    return () => clearInterval(interval);
   }, [session]);
 
   // Listen for chatbot task additions
